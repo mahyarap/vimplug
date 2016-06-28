@@ -1,0 +1,142 @@
+#!/bin/bash
+
+# Simple script to update vim plugins
+
+# Constants
+BUNDLE_PATH="$HOME/.vim/bundle"
+
+# Globals
+exit_code=
+
+download() {
+	git clone $1
+}
+
+# List plugins in $BUNDLE_PATH
+#
+# Arguments:
+#    None
+# Returns:
+#    None
+list() {
+	printf "%-22s%-22s%-22s\n\n" "Plugin Name" "Last Updated" "Last Pull"
+	for file in *; do
+		if [[ -d $file ]] && is_git_repo $file; then
+			cd $file
+			last_updated=$(git show --date=iso | grep "Date" |
+				sed -r 's/^Date:   //' | cut -d ' ' -f 1,2)
+			last_pull=$(stat --printf=%y .git/FETCH_HEAD | cut -d . -f 1)
+			printf "%-22s%-22s%-22s\n" "$file" "$last_updated" "$last_pull"
+			cd ..
+		fi
+	done
+}
+
+# Update plugins in $1. If $1 is empty, update all.
+#
+# Arguments:
+#    Comma separated plugins [OPTIONAL]
+# Returns:
+#    None
+update() {
+	local files
+	local old_IFS
+	local has_comma
+
+	if [[ -z "$1" ]]; then
+		files=$(ls)
+	elif [[ "$1" =~ ^[,[:alnum:]]+$ ]]; then
+		has_comma=true
+		old_IFS=$IFS
+		IFS=,
+		files=$1
+	else
+		err "malformed argument: $1"
+		exit 1
+	fi
+
+	for file in $files; do
+		if [[ -d $file ]] && is_git_repo $file; then
+			cd $file
+			git pull origin master
+			cd ..
+		fi
+	done
+	if [[ "$has_comma" = true ]]; then
+		IFS=$old_IFS
+	fi
+}
+
+print_help() {
+	cat <<- EOF
+	Usage: vimplug [OPTION]...
+	Manage VIM plugins.
+
+	    -d URL          download from URL and install
+	    -l              list installed plugins
+	    -h              display this help and exit
+	    -u [PLUGIN]...  update PLUGINs. Each PLUGIN must be separated by
+	                    a comma. If no plugin, specified update all
+	EOF
+}
+
+# Check if $1 has optional argument. If true, then pass an empty
+# argument to the corresponding routine.
+#
+# Arguments:
+#     A command-line option
+# Returns:
+#     None
+handle_optional_arg() {
+	if [[ $1 -eq u ]]; then
+		update ""
+	fi
+}
+
+is_git_repo() {
+	cd $1
+	git status &> /dev/null
+	exit_code=$?
+	cd ..
+	return $exit_code
+}
+
+err() {
+	echo "$@" 1>&2
+}
+
+main() {
+	if ! cd $BUNDLE_PATH 2> /dev/null; then
+		err "$BUNDLE_PATH does not exist"
+		exit 1
+	fi
+
+	if [[ $# -eq 0 ]]; then
+		list
+		exit 0
+	fi
+
+	while getopts ':d:lu:h' opt; do
+		case $opt in
+		d) download "$OPTARG"
+			;;
+		l) list
+			;;
+		u) update "$OPTARG"
+			;;
+		h) print_help
+		   exit 0
+			;;
+		:) handle_optional_arg "$OPTARG"
+			;;
+		*) print_help
+		   exit 1
+			;;
+		esac
+	done
+
+	# If we get here, all went smoothly
+	exit 0
+}
+
+main "$@"
