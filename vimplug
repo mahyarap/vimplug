@@ -88,9 +88,13 @@ print_help() {
 # Returns:
 #     None
 handle_optional_arg() {
-	if [[ $1 -eq u ]]; then
-		update ""
-	fi
+	case $1 in
+	u) update ""
+		;;
+	*) err "option '-$1' requires an argument"
+	   exit 1
+		;;
+	esac
 }
 
 is_git_repo() {
