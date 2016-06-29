@@ -8,7 +8,7 @@ BUNDLE_PATH="$HOME/.vim/bundle"
 # Globals
 exit_code=
 
-download() {
+install() {
 	git clone $1
 }
 
@@ -72,11 +72,11 @@ print_help() {
 	Usage: vimplug [OPTION]...
 	Manage VIM plugins.
 
-	    -d URL          download from URL and install
+	    -i URL          download from URL and install
 	    -l              list installed plugins
 	    -h              display this help and exit
 	    -u [PLUGIN]...  update PLUGINs. Each PLUGIN must be separated by
-	                    a comma. If no plugin, specified update all
+	                    a comma. If no plugin specified, update all
 	EOF
 }
 
@@ -118,7 +118,7 @@ main() {
 
 	while getopts ':d:lu:h' opt; do
 		case $opt in
-		d) download "$OPTARG"
+		i) install "$OPTARG"
 			;;
 		l) list
 			;;
