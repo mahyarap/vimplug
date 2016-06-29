@@ -8,6 +8,12 @@ BUNDLE_PATH="$HOME/.vim/bundle"
 # Globals
 exit_code=
 
+# Downlaod and install plugins in $1.
+#
+# Arguments:
+#    Comma separated plugins
+# Returns:
+#    None
 install() {
 	git clone $1
 }
@@ -97,6 +103,12 @@ handle_optional_arg() {
 	esac
 }
 
+# Check if $1 is a Git repository.
+#
+# Arguments:
+#     A directory
+# Returns:
+#     Exit code of `git status`
 is_git_repo() {
 	cd $1
 	git status &> /dev/null
@@ -105,8 +117,14 @@ is_git_repo() {
 	return $exit_code
 }
 
+# Error reporting routine. Write to STDERR.
+#
+# Arguments:
+#     A message
+# Returns:
+#     None
 err() {
-	echo "$@" 1>&2
+	echo "$1" 1>&2
 }
 
 main() {
