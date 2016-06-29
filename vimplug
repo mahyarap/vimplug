@@ -18,6 +18,18 @@ install() {
 	git clone $1
 }
 
+# Remove plugins in $1.
+#
+# Arguments:
+#    Comma separated plugins
+# Returns:
+#    None
+remove() {
+	# Just make sure that we are in the right directory
+	cd $BUNDLE_PATH
+	stat $1 > /dev/null && rm -rf $1
+}
+
 # List plugins in $BUNDLE_PATH
 #
 # Arguments:
@@ -80,9 +92,10 @@ print_help() {
 
 	    -i URL          download from URL and install
 	    -l              list installed plugins
+	    -r [PLUGIN]...  remove PLUGINs. Each PLUGIN must be separated by a comma.
+	    -u [PLUGIN]...  update PLUGINs. Each PLUGIN must be separated by a comma.
+	                    If no plugin specified, update all
 	    -h              display this help and exit
-	    -u [PLUGIN]...  update PLUGINs. Each PLUGIN must be separated by
-	                    a comma. If no plugin specified, update all
 	EOF
 }
 
@@ -138,11 +151,13 @@ main() {
 		exit 0
 	fi
 
-	while getopts ':d:lu:h' opt; do
+	while getopts ':i:lr:u:h' opt; do
 		case $opt in
 		i) install "$OPTARG"
 			;;
 		l) list
+			;;
+		r) remove "$OPTARG"
 			;;
 		u) update "$OPTARG"
 			;;
