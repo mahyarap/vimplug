@@ -37,6 +37,16 @@ remove() {
 # Returns:
 #    None
 list() {
+	local opt_sort=false
+
+	while getopts ":s" opt; do
+		case $opt in
+		s)
+			opt_sort=true
+			;;
+		esac
+	done
+
 	printf "%-22s%-22s%-22s\n\n" "Plugin Name" "Last Updated" "Last Pull"
 	for file in *; do
 		if [[ -d $file ]] && is_git_repo $file; then
@@ -165,25 +175,32 @@ main() {
 
 	case $1 in
 	install)
+		shift
 		install "$@"
 		;;
 	list)
+		shift
 		list "$@"
 		;;
 	set-bundle-path)
+		shift
 		set_bundle_path "$@"
 		;;
 	remove)
+		shift
 		remove "$@"
 		;;
 	update)
+		shift
 		update "$@"
 		;;
 	help)
+		shift
 		print_help "$@"
 		exit 0
 		;;
 	*)
+		shift
 		err "unknown command '$1'"; echo
 		print_help "$@"
 		exit 1
