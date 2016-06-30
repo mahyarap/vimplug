@@ -31,14 +31,20 @@ remove() {
 }
 
 # List plugins in $BUNDLE_PATH
+# Options the command takes:
+#    -s (sort by last commit)
 #
 # Arguments:
 #    None
 # Returns:
 #    None
 list() {
-	local opt_sort=false
+	local plugin_name
+	local last_commit
+	local last_pull
+	local output
 
+	local opt_sort=false
 	while getopts ":s" opt; do
 		case $opt in
 		s)
@@ -47,17 +53,26 @@ list() {
 		esac
 	done
 
-	printf "%-22s%-22s%-22s\n\n" "Plugin Name" "Last Updated" "Last Pull"
 	for file in *; do
 		if [[ -d $file ]] && is_git_repo $file; then
 			cd $file
-			last_updated=$(git show --date=iso | grep "Date" |
+			plugin_name=$file
+			last_commit=$(git show --date=iso | grep "Date" |
 				sed -r 's/^Date:   //' | cut -d ' ' -f 1,2)
-			last_pull=$(stat --printf=%y .git/FETCH_HEAD | cut -d . -f 1)
-			printf "%-22s%-22s%-22s\n" "$file" "$last_updated" "$last_pull"
+			last_pull=$(stat --printf=%y .git/FETCH_HEAD |
+				cut -d . -f 1)
+			output+="$(printf "%-22s%-22s%-22s" "$plugin_name" \
+				"$last_commit" "$last_pull")\n"
 			cd ..
 		fi
 	done
+
+	if [[ $opt_sort = true ]]; then
+		output="$(echo -ne "$output" | sort --key 2,3)\n"
+	fi
+
+	printf "%-22s%-22s%-22s\n\n" "Plugin Name" "Last Commit" "Last Pull"
+	echo -e "$output"
 }
 
 # Update plugins in $1. If $1 is empty, update all.
