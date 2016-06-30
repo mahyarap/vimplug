@@ -184,6 +184,7 @@ main() {
 		exit 0
 		;;
 	*)
+		err "unknown command '$1'"; echo
 		print_help "$@"
 		exit 1
 		;;
