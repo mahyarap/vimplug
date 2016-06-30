@@ -98,16 +98,16 @@ set_bundle_path() {
 
 print_help() {
 	cat <<- "EOF"
-	Usage: vimplug [OPTION]...
+	Usage: vimplug COMMAND [OPTION]...
 	Manage VIM plugins.
 
-	    -i URL          download from URL and install
-	    -l              list installed plugins
-	    -p              set bundle path. Default $HOME/.vim/bundle
-	    -r [PLUGIN]...  remove PLUGINs. Each PLUGIN must be separated by a comma
-	    -u [PLUGIN]...  update PLUGINs. Each PLUGIN must be separated by a comma.
-	                    If no plugin specified, update all
-	    -h              display this help and exit
+	COMMANDs:
+	    install         install plugins
+	    list            list installed plugins
+	    set-bundle-path set bundle path. Default $HOME/.vim/bundle
+	    remove          remove plugins
+	    update          update plugins
+	    help            dispaly help for commands
 	EOF
 }
 
@@ -153,38 +153,41 @@ err() {
 }
 
 main() {
+	if [[ $# -eq 0 ]]; then
+		err "missing command"
+		exit 1
+	fi
+
 	if ! cd $BUNDLE_PATH 2> /dev/null; then
 		err "$BUNDLE_PATH does not exist"
 		exit 1
 	fi
 
-	if [[ $# -eq 0 ]]; then
-		list
+	case $1 in
+	install)
+		install "$@"
+		;;
+	list)
+		list "$@"
+		;;
+	set-bundle-path)
+		set_bundle_path "$@"
+		;;
+	remove)
+		remove "$@"
+		;;
+	update)
+		update "$@"
+		;;
+	help)
+		print_help "$@"
 		exit 0
-	fi
-
-	while getopts ':i:lp:r:u:h' opt; do
-		case $opt in
-		i) install "$OPTARG"
-			;;
-		l) list
-			;;
-		p) set_bundle_path "$OPTARG"
-			;;
-		r) remove "$OPTARG"
-			;;
-		u) update "$OPTARG"
-			;;
-		h) print_help
-		   exit 0
-			;;
-		:) handle_optional_arg "$OPTARG"
-			;;
-		*) print_help
-		   exit 1
-			;;
-		esac
-	done
+		;;
+	*)
+		print_help "$@"
+		exit 1
+		;;
+	esac
 
 	# If we get here, all went smoothly
 	exit 0
