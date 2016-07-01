@@ -122,6 +122,47 @@ set_bundle_path() {
 }
 
 print_help() {
+	if [[ -z $1 ]] || [[ $1 = help ]]; then
+		cat <<- "EOF"
+		This is the help for help.
+		EOF
+		return 0
+	fi
+
+	case $1 in
+	install)
+		cat <<- "EOF"
+		This is the help for install.
+		EOF
+		;;
+	list)
+		cat <<- "EOF"
+		This is the help for list
+		EOF
+		;;
+	set-bundle-path)
+		cat <<- "EOF"
+		This is the help for set_bundle_path.
+		EOF
+		;;
+	remove)
+		cat <<- "EOF"
+		This is the help for remove.
+		EOF
+		;;
+	update)
+		cat <<- "EOF"
+		This is the help for update.
+		EOF
+		;;
+	*)
+		err "unknown command '$1'"
+		exit 1
+		;;
+	esac
+}
+
+usage() {
 	cat <<- "EOF"
 	Usage: vimplug COMMAND [OPTION]...
 	Manage VIM plugins.
@@ -215,9 +256,8 @@ main() {
 		exit 0
 		;;
 	*)
-		shift
 		err "unknown command '$1'"; echo
-		print_help "$@"
+		usage
 		exit 1
 		;;
 	esac
