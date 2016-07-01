@@ -75,27 +75,21 @@ list() {
 	echo -e "$output"
 }
 
-# Update plugins in $1. If $1 is empty, update all.
+# Update plugins in $@. If $@ is empty, update all.
 #
 # Arguments:
-#    Comma separated plugins [OPTIONAL]
+#    List of white-space separated plugins [OPTIONAL]
 # Returns:
 #    None
 update() {
 	local files
-	local old_IFS
-	local has_comma
+	local has_args=false
 
-	if [[ -z "$1" ]]; then
+	if [[ -z "$@" ]]; then
 		files=$(ls)
-	elif [[ "$1" =~ ^[,[:alnum:]]+$ ]]; then
-		has_comma=true
-		old_IFS=$IFS
-		IFS=,
-		files=$1
 	else
-		err "malformed argument: $1"
-		exit 1
+		has_args=true
+		files=$@
 	fi
 
 	for file in $files; do
@@ -103,11 +97,10 @@ update() {
 			cd $file
 			git pull origin master
 			cd ..
+		elif [[ $has_args = true ]]; then
+			err "no such a plugin: '$file'"
 		fi
 	done
-	if [[ "$has_comma" = true ]]; then
-		IFS=$old_IFS
-	fi
 }
 
 # Set global variable BUNDLE_PATH to $1 and cd to it.
