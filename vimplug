@@ -18,16 +18,23 @@ install() {
 	git clone $1
 }
 
-# Remove plugins in $1.
+# Remove plugins in $@.
 #
 # Arguments:
-#    Comma separated plugins
+#    List of white-space separated plugins
 # Returns:
 #    None
 remove() {
 	# Just make sure that we are in the right directory
 	cd $BUNDLE_PATH
-	stat $1 > /dev/null && rm -rf $1
+	for file in "$@"; do
+		stat "$file" &> /dev/null
+		if [[ $? -gt 0 ]]; then
+			err "no such a plugin: '$file'"
+		else
+			rm -rf "$file"
+		fi
+	done
 }
 
 # List plugins in $BUNDLE_PATH
