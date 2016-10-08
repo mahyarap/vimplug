@@ -1,76 +1,107 @@
 #!/bin/bash
 
-# Simple script to update vim plugins
+# Simple script to manage vim plugins
 
 # Constants
-BUNDLE_PATH="$HOME/.vim/bundle"
 
 # Globals
+BUNDLE_PATH="$HOME/.vim/bundle"
 exit_code=
 
-# Downlaod and install plugins in $1.
+# Downlaod and install plugins in $@.
 #
 # Arguments:
-#    Comma separated plugins
+#    List of white-space separated URLs
 # Returns:
 #    None
 install() {
-	git clone $1
+	for url in "$@"; do
+		git clone "$url"
+	done
 }
 
-# Remove plugins in $1.
+# Remove plugins in $@.
 #
 # Arguments:
-#    Comma separated plugins
+#    List of white-space separated plugins
 # Returns:
 #    None
 remove() {
 	# Just make sure that we are in the right directory
 	cd $BUNDLE_PATH
-	stat $1 > /dev/null && rm -rf $1
+	for file in "$@"; do
+		stat "$file" &> /dev/null
+		if [[ $? -gt 0 ]]; then
+			err "no such a plugin: '$file'"
+		else
+			rm -rf "$file"
+		fi
+	done
 }
 
 # List plugins in $BUNDLE_PATH
+# Options the command takes:
+#    -s (sort by last commit)
 #
 # Arguments:
 #    None
 # Returns:
 #    None
 list() {
-	printf "%-22s%-22s%-22s\n\n" "Plugin Name" "Last Updated" "Last Pull"
+	local plugin_name
+	local last_commit
+	local last_pull
+	local output
+
+	local opt_sort=false
+	while getopts ":s" opt; do
+		case $opt in
+		s)
+			opt_sort=true
+			;;
+		esac
+	done
+
 	for file in *; do
 		if [[ -d $file ]] && is_git_repo $file; then
 			cd $file
-			last_updated=$(git show --date=iso | grep "Date" |
+			plugin_name=$file
+			last_commit=$(git show --date=iso | grep "Date" |
 				sed -r 's/^Date:   //' | cut -d ' ' -f 1,2)
-			last_pull=$(stat --printf=%y .git/FETCH_HEAD | cut -d . -f 1)
-			printf "%-22s%-22s%-22s\n" "$file" "$last_updated" "$last_pull"
+			last_pull=$(stat --printf=%y .git/FETCH_HEAD 2> /dev/null |
+				cut -d . -f 1)
+			if [[ -z $last_pull ]]; then
+				last_pull="?"
+			fi
+			output+="$(printf "%-22s%-22s%-22s" "$plugin_name" \
+				"$last_commit" "$last_pull")\n"
 			cd ..
 		fi
 	done
+
+	if [[ $opt_sort = true ]]; then
+		output="$(echo -ne "$output" | sort --key 2,3)\n"
+	fi
+
+	printf "%-22s%-22s%-22s\n\n" "Plugin Name" "Last Commit" "Last Pull"
+	echo -e "$output"
 }
 
-# Update plugins in $1. If $1 is empty, update all.
+# Update plugins in $@. If $@ is empty, update all.
 #
 # Arguments:
-#    Comma separated plugins [OPTIONAL]
+#    List of white-space separated plugins [OPTIONAL]
 # Returns:
 #    None
 update() {
 	local files
-	local old_IFS
-	local has_comma
+	local has_args=false
 
-	if [[ -z "$1" ]]; then
+	if [[ -z "$@" ]]; then
 		files=$(ls)
-	elif [[ "$1" =~ ^[,[:alnum:]]+$ ]]; then
-		has_comma=true
-		old_IFS=$IFS
-		IFS=,
-		files=$1
 	else
-		err "malformed argument: $1"
-		exit 1
+		has_args=true
+		files=$@
 	fi
 
 	for file in $files; do
@@ -78,11 +109,10 @@ update() {
 			cd $file
 			git pull origin master
 			cd ..
+		elif [[ $has_args = true ]]; then
+			err "no such a plugin: '$file'"
 		fi
 	done
-	if [[ "$has_comma" = true ]]; then
-		IFS=$old_IFS
-	fi
 }
 
 # Set global variable BUNDLE_PATH to $1 and cd to it.
@@ -93,21 +123,62 @@ update() {
 #     None
 set_bundle_path() {
 	BUNDLE_PATH=$1
-	cd $BUNDLE_PATH
+	cd $BUNDLE_PATH 2> /dev/null || err "no such a path: '$1'"
 }
 
 print_help() {
+	if [[ -z $1 ]] || [[ $1 = help ]]; then
+		cat <<- "EOF"
+		This is the help for help.
+		EOF
+		return 0
+	fi
+
+	case $1 in
+	install)
+		cat <<- "EOF"
+		This is the help for install.
+		EOF
+		;;
+	list)
+		cat <<- "EOF"
+		This is the help for list
+		EOF
+		;;
+	set-bundle-path)
+		cat <<- "EOF"
+		This is the help for set_bundle_path.
+		EOF
+		;;
+	remove)
+		cat <<- "EOF"
+		This is the help for remove.
+		EOF
+		;;
+	update)
+		cat <<- "EOF"
+		This is the help for update.
+		EOF
+		;;
+	*)
+		err "unknown command: '$1'"
+		exit 1
+		;;
+	esac
+}
+
+usage() {
 	cat <<- "EOF"
-	Usage: vimplug [OPTION]...
+	Usage: vimplug COMMAND [OPTION]...
 	Manage VIM plugins.
 
-	    -i URL          download from URL and install
-	    -l              list installed plugins
-	    -p              set bundle path. Default $HOME/.vim/bundle
-	    -r [PLUGIN]...  remove PLUGINs. Each PLUGIN must be separated by a comma
-	    -u [PLUGIN]...  update PLUGINs. Each PLUGIN must be separated by a comma.
-	                    If no plugin specified, update all
-	    -h              display this help and exit
+	COMMANDs:
+	    install         install plugins
+	    list            list installed plugins
+	    set-bundle-path set bundle path. Default $HOME/.vim/bundle
+	    remove          remove plugins
+	    update          update plugins
+	    help            dispaly help for commands
 	EOF
 }
 
@@ -153,38 +224,48 @@ err() {
 }
 
 main() {
+	if [[ $# -eq 0 ]]; then
+		err "missing command"
+		exit 1
+	fi
+
 	if ! cd $BUNDLE_PATH 2> /dev/null; then
 		err "$BUNDLE_PATH does not exist"
 		exit 1
 	fi
 
-	if [[ $# -eq 0 ]]; then
-		list
+	case $1 in
+	install)
+		shift
+		install "$@"
+		;;
+	list)
+		shift
+		list "$@"
+		;;
+	set-bundle-path)
+		shift
+		set_bundle_path "$@"
+		;;
+	remove)
+		shift
+		remove "$@"
+		;;
+	update)
+		shift
+		update "$@"
+		;;
+	help)
+		shift
+		print_help "$@"
 		exit 0
-	fi
-
-	while getopts ':i:lp:r:u:h' opt; do
-		case $opt in
-		i) install "$OPTARG"
-			;;
-		l) list
-			;;
-		p) set_bundle_path "$OPTARG"
-			;;
-		r) remove "$OPTARG"
-			;;
-		u) update "$OPTARG"
-			;;
-		h) print_help
-		   exit 0
-			;;
-		:) handle_optional_arg "$OPTARG"
-			;;
-		*) print_help
-		   exit 1
-			;;
-		esac
-	done
+		;;
+	*)
+		err "unknown command: '$1'"; echo
+		usage
+		exit 1
+		;;
+	esac
 
 	# If we get here, all went smoothly
 	exit 0
