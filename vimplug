@@ -68,8 +68,11 @@ list() {
 			plugin_name=$file
 			last_commit=$(git show --date=iso | grep "Date" |
 				sed -r 's/^Date:   //' | cut -d ' ' -f 1,2)
-			last_pull=$(stat --printf=%y .git/FETCH_HEAD |
+			last_pull=$(stat --printf=%y .git/FETCH_HEAD 2> /dev/null |
 				cut -d . -f 1)
+			if [[ -z $last_pull ]]; then
+				last_pull="?"
+			fi
 			output+="$(printf "%-22s%-22s%-22s" "$plugin_name" \
 				"$last_commit" "$last_pull")\n"
 			cd ..
