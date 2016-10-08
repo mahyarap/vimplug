@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Simple script to update vim plugins
+# Simple script to manage vim plugins
 
 # Constants
-BUNDLE_PATH="$HOME/.vim/bundle"
 
 # Globals
+BUNDLE_PATH="$HOME/.vim/bundle"
 exit_code=
 
 # Downlaod and install plugins in $@.
@@ -161,7 +161,7 @@ print_help() {
 		EOF
 		;;
 	*)
-		err "unknown command '$1'"
+		err "unknown command: '$1'"
 		exit 1
 		;;
 	esac
@@ -261,7 +261,7 @@ main() {
 		exit 0
 		;;
 	*)
-		err "unknown command '$1'"; echo
+		err "unknown command: '$1'"; echo
 		usage
 		exit 1
 		;;
