@@ -42,6 +42,7 @@ remove() {
 # List plugins in $BUNDLE_PATH
 # Options the command takes:
 #    -s (sort by last commit)
+#    -u (include plugin's URL)
 #
 # Arguments:
 #    None
@@ -52,12 +53,17 @@ list() {
 	local last_commit
 	local last_pull
 	local output
+	local url
 
+	local opt_url=false
 	local opt_sort=false
-	while getopts ":s" opt; do
+	while getopts ":su" opt; do
 		case $opt in
 		s)
 			opt_sort=true
+			;;
+		u)
+			opt_url=true
 			;;
 		esac
 	done
@@ -73,8 +79,14 @@ list() {
 			if [[ -z $last_pull ]]; then
 				last_pull="?"
 			fi
-			output+="$(printf "%-22s%-22s%-22s" "$plugin_name" \
-				"$last_commit" "$last_pull")\n"
+			url=$(git remote get-url origin)
+
+			if [[ $opt_url = true ]]; then
+				output+="$(printf "%-22s%-22s" "$plugin_name" "$url")\n"
+			else
+				output+="$(printf "%-22s%-22s%-22s" "$plugin_name" \
+					"$last_commit" "$last_pull")\n"
+			fi
 			cd ..
 		fi
 	done
@@ -83,7 +95,11 @@ list() {
 		output="$(echo -ne "$output" | sort --key 2,3)\n"
 	fi
 
-	printf "%-22s%-22s%-22s\n\n" "Plugin Name" "Last Commit" "Last Pull"
+	if [[ $opt_url = true ]]; then
+		printf "%-22s%-22s\n\n" "Plugin Name" "URL"
+	else
+		printf "%-22s%-22s%-22s\n\n" "Plugin Name" "Last Commit" "Last Pull"
+	fi
 	echo -e "$output"
 }
 
