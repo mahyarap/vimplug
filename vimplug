@@ -8,14 +8,16 @@ BUNDLE_PATH="$HOME/.vim/bundle"
 # Globals
 exit_code=
 
-# Downlaod and install plugins in $1.
+# Downlaod and install plugins in $@.
 #
 # Arguments:
-#    Comma separated plugins
+#    List of white-space separated URLs
 # Returns:
 #    None
 install() {
-	git clone $1
+	for url in "$@"; do
+		git clone "$url"
+	done
 }
 
 # Remove plugins in $@.
