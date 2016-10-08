@@ -123,7 +123,7 @@ update() {
 #     None
 set_bundle_path() {
 	BUNDLE_PATH=$1
-	cd $BUNDLE_PATH
+	cd $BUNDLE_PATH 2> /dev/null || err "no such a path: '$1'"
 }
 
 print_help() {
