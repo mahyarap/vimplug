@@ -13,7 +13,7 @@ manage Vim's runtime path. Vimplug looks for a directory named `bundle` in your
 `$HOME/.vim` directory but it can be configured.
 
 ## Installation
-Simply install it in a directory which is in your execution $PATH.
+Simply install it in a directory that is in your execution `$PATH`.
 
 ## License
 MIT License
