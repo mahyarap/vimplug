@@ -180,32 +180,55 @@ update() {
 }
 
 print_help() {
-	if [[ -z $1 ]] || [[ $1 = help ]]; then
-		cat <<- "EOF"
-		This is the help for help.
-		EOF
+	if [[ -z "$1" ]] || [[ "$1" = help ]]; then
+		usage
+		echo
+		echo "'vimplug help COMMAND' for more information on each command."
 		return 0
 	fi
 
 	case $1 in
 	install)
 		cat <<- "EOF"
-		This is the help for install.
+		Usage:
+		    vimplug install [OPTION] [URL] ...
+
+		Given a URL, install it in '$HOME/.vim/bundle'. If the -r option
+		is supplied, read the install list from a file.
+
+		Options:
+		    -r    if the VIMPLUG_VIMRC environment variable is set, read
+			      the file it refers to. Otherwise, look for vimrc in the
+				  standard locations.
 		EOF
 		;;
 	list)
 		cat <<- "EOF"
-		This is the help for list
+		Usage:
+		    vimplug list [OPTION]
+
+		List plugins. Use an OPTION to alter the output.
+
+		Options:
+		    -s    sort by last commit
+		    -u    show plugin's git repo URL
 		EOF
 		;;
 	remove)
 		cat <<- "EOF"
-		This is the help for remove.
+		Usage:
+		    vimplug remove [PLUGIN] ...
+
+		Remove plugins. PLUGIN must be the directory name of the plugin.
 		EOF
 		;;
 	update)
 		cat <<- "EOF"
-		This is the help for update.
+		Usage:
+		    vimplug update [PLUGIN] ...
+
+		Update plugins. PLUGIN must be the directory name of the plugin.
+		If no plugin is supplied, update all.
 		EOF
 		;;
 	*)
@@ -275,6 +298,7 @@ err() {
 main() {
 	if [[ $# -eq 0 ]]; then
 		err "missing command"
+		err "Try 'vimplug help' for more information."
 		exit 1
 	fi
 
