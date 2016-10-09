@@ -129,9 +129,9 @@ list() {
 			url=$(git remote get-url origin)
 
 			if [[ $opt_url = true ]]; then
-				output+="$(printf "%-22s%-22s" "$plugin_name" "$url")\n"
+				output+="$(printf "%-21s%-21s" "$plugin_name" "$url")\n"
 			else
-				output+="$(printf "%-22s%-22s%-22s" "$plugin_name" \
+				output+="$(printf "%-21s%-21s%-21s" "$plugin_name" \
 					"$last_commit" "$last_pull")\n"
 			fi
 			cd ..
@@ -143,11 +143,11 @@ list() {
 	fi
 
 	if [[ $opt_url = true ]]; then
-		printf "%-22s%-22s\n\n" "Plugin Name" "URL"
+		printf "%-21s%-21s\n\n" "Plugin Name" "URL"
 	else
-		printf "%-22s%-22s%-22s\n\n" "Plugin Name" "Last Commit" "Last Pull"
+		printf "%-21s%-21s%-21s\n\n" "Plugin Name" "Last Commit" "Last Pull"
 	fi
-	echo -e "$output"
+	printf "$output"
 }
 
 # Update plugins in $@. If $@ is empty, update all.
