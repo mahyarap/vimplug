@@ -19,7 +19,7 @@ exit_code=
 #    None
 install() {
 	local vimrc
-	local urls="$@"
+	local urls
 
 	local opt_read=false
 	while getopts ":r" opt; do
@@ -33,6 +33,11 @@ install() {
 	if [[ $opt_read = true ]]; then
 		if [[ -n "$VIMPLUG_VIMRC" ]]; then
 			vimrc="$VIMPLUG_VIMRC"
+			if ! stat "$vimrc" &> /dev/null; then
+				err "VIMPLUG_VIMRC: $vimrc"
+				err "path does not exist"
+				exit 1
+			fi
 		else
 			if stat "$HOME/.vimrc" &> /dev/null; then
 				vimrc="$HOME/.vimrc"
@@ -46,6 +51,12 @@ install() {
 				urls+="$(cut -d ' ' -f 3 <<< $line) "
 			fi
 		done < "$vimrc"
+	else
+		if [[ $# -eq 0 ]]; then
+			err "missing URL"
+			exit 1
+		fi
+		urls="$@"
 	fi
 
 	for url in $urls; do
