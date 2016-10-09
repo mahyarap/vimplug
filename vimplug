@@ -9,12 +9,14 @@ BUNDLE_PATH="$HOME/.vim/bundle"
 exit_code=
 
 # Downlaod and install plugins in $@.
+#
 # Options the command takes:
 #    -r    read vimrc path from VIMPLUG_VIMRC enironment variable
-#          or look for it in its standard locations
+#          or use the standard locations
 #
 # Arguments:
 #    List of white-space separated URLs
+#
 # Returns:
 #    None
 install() {
@@ -68,14 +70,14 @@ install() {
 #
 # Arguments:
 #    List of white-space separated plugins
+#
 # Returns:
 #    None
 remove() {
 	# Just make sure that we are in the right directory
 	cd $BUNDLE_PATH
 	for file in "$@"; do
-		stat "$file" &> /dev/null
-		if [[ $? -gt 0 ]]; then
+		if ! stat "$file" &> /dev/null; then
 			err "no such a plugin: '$file'"
 		else
 			rm -rf "$file"
@@ -85,11 +87,12 @@ remove() {
 
 # List plugins in $BUNDLE_PATH
 # Options the command takes:
-#    -s (sort by last commit)
-#    -u (include plugin's URL)
+#    -s    sort by last commit
+#    -u    show plugin's URL
 #
 # Arguments:
 #    None
+#
 # Returns:
 #    None
 list() {
@@ -151,6 +154,7 @@ list() {
 #
 # Arguments:
 #    List of white-space separated plugins [OPTIONAL]
+#
 # Returns:
 #    None
 update() {
@@ -230,6 +234,7 @@ usage() {
 #
 # Arguments:
 #     A command-line option
+#
 # Returns:
 #     None
 handle_optional_arg() {
@@ -260,6 +265,7 @@ is_git_repo() {
 #
 # Arguments:
 #     A message
+#
 # Returns:
 #     None
 err() {
