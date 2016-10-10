@@ -126,7 +126,7 @@ list() {
 			if [[ -z $last_pull ]]; then
 				last_pull="?"
 			fi
-			url=$(git remote get-url origin)
+			url=$(git remote -v | tr '\t' ' ' | cut -d ' ' -f 2 | head -n 1)
 
 			if [[ $opt_url = true ]]; then
 				output+="$(printf "%-21s%-21s" "$plugin_name" "$url")\n"
