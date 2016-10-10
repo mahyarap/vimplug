@@ -139,7 +139,7 @@ list() {
 	done
 
 	if [[ $opt_sort = true ]]; then
-		output="$(echo -ne "$output" | sort --key 2,3)\n"
+		output="$(printf "$output" | sort --key 2,3)\n"
 	fi
 
 	if [[ $opt_url = true ]]; then
