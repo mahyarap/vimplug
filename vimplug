@@ -181,8 +181,8 @@ update() {
 	done
 
 	if [[ "$files" =~ vimplug ]]; then
-		if ! cp "vimplug/vimplug" "$HOME/bin" 2> /dev/null; then
-			err "could not install 'vimplug' in '$HOME/bin'"
+		if ! stat "$HOME/bin/vimplug" &> /dev/null; then
+			ln -s "$PWD/vimplug/vimplug" "$HOME/bin/vimplug"
 		fi
 	fi
 }
