@@ -167,18 +167,24 @@ update() {
 		files=$(ls)
 	else
 		has_args=true
-		files=$@
+		files="$@"
 	fi
 
 	for file in $files; do
-		if [[ -d $file ]] && is_git_repo $file; then
-			cd $file
+		if [[ -d "$file" ]] && is_git_repo "$file"; then
+			cd "$file"
 			git pull origin master
 			cd ..
 		elif [[ $has_args = true ]]; then
 			err "no such a plugin: '$file'"
 		fi
 	done
+
+	if [[ "$files" =~ vimplug ]]; then
+		if ! cp "vimplug/vimplug" "$HOME/bin" 2> /dev/null; then
+			err "could not install 'vimplug' in '$HOME/bin'"
+		fi
+	fi
 }
 
 print_help() {
