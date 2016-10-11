@@ -21,7 +21,7 @@ exit_code=
 #    None
 install() {
 	local vimrc
-	local urls
+	local urls=""
 
 	local opt_read=false
 	while getopts ":r" opt; do
@@ -45,12 +45,14 @@ install() {
 				vimrc="$HOME/.vimrc"
 			elif stat "$HOME/.vim/vimrc" &> /dev/null; then
 				vimrc="$HOME/.vim/vimrc"
+			else
+				err "could not find vimrc"
+				exit 1
 			fi
 		fi
-		urls=
 		while read -r line; do
 			if [[ $line =~ ^\"\| ]]; then
-				urls+="$(cut -d ' ' -f 3 <<< $line) "
+				urls+="$(sed -re 's/^\"\|[[:blank:]]*([[:graph:]]+[[:blank:]]+)?([[:graph:]]+)/\2/' <<< $line) "
 			fi
 		done < "$vimrc"
 	else
