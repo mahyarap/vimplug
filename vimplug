@@ -131,9 +131,9 @@ list() {
 			url=$(git remote -v | tr '\t' ' ' | cut -d ' ' -f 2 | head -n 1)
 
 			if [[ $opt_url = true ]]; then
-				output+="$(printf "%-21s%-21s" "$plugin_name" "$url")\n"
+				output+="$(printf "%-25s%-21s" "$plugin_name" "$url")\n"
 			else
-				output+="$(printf "%-21s%-21s%-21s" "$plugin_name" \
+				output+="$(printf "%-25s%-21s%-21s" "$plugin_name" \
 					"$last_commit" "$last_pull")\n"
 			fi
 			cd ..
@@ -145,9 +145,9 @@ list() {
 	fi
 
 	if [[ $opt_url = true ]]; then
-		printf "%-21s%-21s\n\n" "Plugin Name" "URL"
+		printf "%-25s%-21s\n\n" "Plugin Name" "URL"
 	else
-		printf "%-21s%-21s%-21s\n\n" "Plugin Name" "Last Commit" "Last Pull"
+		printf "%-25s%-21s%-21s\n\n" "Plugin Name" "Last Commit" "Last Pull"
 	fi
 	printf "$output"
 }
