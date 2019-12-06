@@ -121,7 +121,7 @@ list() {
 		if [[ -d $file ]] && is_git_repo $file; then
 			cd $file
 			plugin_name=$file
-			last_commit=$(git show --date=iso | grep "Date" |
+			last_commit=$(git log -1 --date=iso | grep "Date" |
 				sed -r 's/^Date:   //' | cut -d ' ' -f 1,2)
 			last_pull=$(stat --printf=%y .git/FETCH_HEAD 2> /dev/null |
 				cut -d . -f 1)
