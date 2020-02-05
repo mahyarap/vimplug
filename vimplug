@@ -52,7 +52,7 @@ install() {
 		fi
 		while read -r line; do
 			if [[ $line =~ ^\"\| ]]; then
-				urls+="$(sed -re 's/^\"\|[[:blank:]]*([[:graph:]]+[[:blank:]]+)?([[:graph:]]+)/\2/' <<< $line) "
+				urls+="$(sed -E -e 's/^\"\|[[:blank:]]*([[:graph:]]+[[:blank:]]+)?([[:graph:]]+)/\2/' <<< $line) "
 			fi
 		done < "$vimrc"
 	else
@@ -122,7 +122,7 @@ list() {
 			cd $file
 			plugin_name=$file
 			last_commit=$(git log -1 --date=iso | grep "Date" |
-				sed -r 's/^Date:   //' | cut -d ' ' -f 1,2)
+				sed -E 's/^Date:   //' | cut -d ' ' -f 1,2)
 			last_pull=$(stat --printf=%y .git/FETCH_HEAD 2> /dev/null |
 				cut -d . -f 1)
 			if [[ -z $last_pull ]]; then
